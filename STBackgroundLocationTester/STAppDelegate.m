@@ -13,7 +13,27 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     [[UIDevice currentDevice] setBatteryMonitoringEnabled:YES];
-    return YES;
+
+	// ローカル通知を初期化
+	if ([application respondsToSelector:@selector(registerUserNotificationSettings:)]) {
+		UIUserNotificationSettings *settings = [UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert|UIUserNotificationTypeSound|UIUserNotificationTypeBadge categories:nil];
+		[application registerUserNotificationSettings:settings];
+		UIApplication.sharedApplication.applicationIconBadgeNumber = 1;
+		UIApplication.sharedApplication.applicationIconBadgeNumber = 0;
+	}
+
+	// LaunchOptionsLocationKey
+	NSDictionary *locationInfo = [launchOptions objectForKey:UIApplicationLaunchOptionsLocationKey];
+	// 大幅位置変更による起動
+	if ( locationInfo != nil ) {
+		[[NSUserDefaults standardUserDefaults] setValue:@"YES" forKey:@"LaunchOptionsLocationKey"];
+		// バッジ＋１
+		UIApplication.sharedApplication.applicationIconBadgeNumber += 100;
+	} else {
+		[[NSUserDefaults standardUserDefaults] setValue:@"NO" forKey:@"LaunchOptionsLocationKey"];
+	}
+
+	return YES;
 }
 							
 - (void)applicationWillResignActive:(UIApplication *)application

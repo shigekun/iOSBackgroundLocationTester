@@ -555,6 +555,7 @@
 				B7DEC1AB1875456400948E19 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		B7DEC1AC1875456400948E19 /* Build configuration list for PBXNativeTarget "STBackgroundLocationTesterTests" */ = {
 			isa = XCConfigurationList;
@@ -563,6 +564,7 @@
 				B7DEC1AE1875456400948E19 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

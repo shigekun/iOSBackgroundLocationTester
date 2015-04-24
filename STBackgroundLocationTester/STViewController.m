@@ -16,6 +16,8 @@
 #define _STCellId @"Cell"
 #define _STCellForHeighId @"CellForHeight"
 
+#define IS_OS_8_OR_LATER ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0)
+
 @interface STViewController () <CLLocationManagerDelegate, UITableViewDataSource, UITableViewDelegate, MKMapViewDelegate>
 
 @property (weak, nonatomic) IBOutlet MKMapView *mapView;
@@ -53,7 +55,13 @@
     [super viewDidLoad];
 
     _locationManager.delegate = self;
-    
+#if __IPHONE_OS_VERSION_MAX_ALLOWED > __IPHONE_7_1
+	if (IS_OS_8_OR_LATER) {
+		[_locationManager requestAlwaysAuthorization];
+		//[myLocationManager requestWhenInUseAuthorization];
+	}
+#endif
+
     _mapView.delegate = self;
     
     UINib *nib = [UINib nibWithNibName:NSStringFromClass([STLogCell class]) bundle:nil];
@@ -177,6 +185,7 @@
     [logString appendString:@"\n"];
     [_logs addObject:logString];
     [_tableView reloadData];
+	NSLog(@"%@", logString);
 }
 
 - (void)showNoticeMessage:(NSString *)message
@@ -205,8 +214,19 @@
     [log appendFormat:@"Location: %f, %f\n", location.coordinate.latitude, location.coordinate.longitude];
     [log appendFormat:@"Ttimestamp: %@\n", [location.timestamp st_formatDateTime]];
     [log appendFormat:@"Accuracy: %f, %f", location.horizontalAccuracy, location.verticalAccuracy];
-    [self appendLog:log];
-    
+	
+	NSString *LaunchOptionsLocationKey = [[NSUserDefaults standardUserDefaults] valueForKey:@"LaunchOptionsLocationKey"];
+	if ( [LaunchOptionsLocationKey isEqual:@"YES"] ) {
+		[[NSUserDefaults standardUserDefaults] setValue:@"" forKey:@"LaunchOptionsLocationKey"];
+		[log appendFormat:@"\nSignificant"];
+	}
+	[self appendLog:log];
+
+	// 通知を発行
+	sendLocalNotificationForMessage(log);
+	// バッジ＋１
+	UIApplication.sharedApplication.applicationIconBadgeNumber += 1;
+
     MKCoordinateRegion region = MKCoordinateRegionMakeWithDistance(location.coordinate, 500, 500);
     _mapView.region = region;
     //
@@ -291,5 +311,19 @@
     
     return pin;
 }
+
+#pragma mark - plus
+
+// 通知メッセージを表示する
+void sendLocalNotificationForMessage(NSString*message)
+{
+	UILocalNotification *localNotification = [UILocalNotification new];
+	localNotification.alertBody = message;
+	localNotification.fireDate = [NSDate date];
+	localNotification.soundName = UILocalNotificationDefaultSoundName;
+	[UIApplication.sharedApplication presentLocalNotificationNow:localNotification];
+}
+
+
 
 @end
